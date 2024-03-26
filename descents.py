@@ -129,6 +129,10 @@ class BaseDescent:
         self.w: np.ndarray = np.random.rand(dimension)
         self.lr: LearningRate = LearningRate(lambda_=lambda_)
         self.loss_function: LossFunction = loss_function
+        if isinstance(loss_function, str):
+            self.loss_function = LossFunction[loss_function]
+        else:
+            self.loss_function = loss_function
 
     def step(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         """
@@ -199,8 +203,21 @@ class BaseDescent:
         float
             Значение функции потерь.
         """
-        y_pred = self.predict(x)  
-        loss = np.mean((y_pred - y) ** 2) 
+        y_pred = self.predict(x)
+
+        if self.loss_function == LossFunction.MSE:
+            loss = np.mean((y_pred - y) ** 2)
+        elif self.loss_function == LossFunction.MAE:
+            loss = np.mean(np.abs(y_pred - y))
+        elif self.loss_function == LossFunction.LogCosh:
+            loss = np.mean(logcosh(y_pred - y))
+        elif self.loss_function == LossFunction.Huber:
+            delta = 1.0 # TODO: Make it customizable
+            residual = np.abs(y_pred - y)
+            loss = np.mean(np.where(residual <= delta, 0.5 * residual ** 2, delta * (residual - 0.5 * delta)))
+        else:
+            raise NotImplementedError(f"The loss function {self.loss_function} is not implemented.")
+
         return loss
 
     def predict(self, x: np.ndarray) -> np.ndarray:
@@ -325,7 +342,7 @@ class StochasticDescent(VanillaGradientDescent):
         """
         batch_indices = np.random.randint(0, x.shape[0], size=self.batch_size)
         x_batch = x[batch_indices]
-        y_batch = y[batch_indices]
+        y_batch = y.iloc[batch_indices]
 
         predictions = self.predict(x_batch)
         errors = predictions - y_batch

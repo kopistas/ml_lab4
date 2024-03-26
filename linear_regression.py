@@ -6,7 +6,15 @@ import numpy as np
 
 from descents import BaseDescent
 from descents import get_descent
+import os
+import datetime
 
+# Needed to verify the file properly loaded into Jupiter Notebook
+def test_loading():
+    file_path = __file__
+    last_modified_time = os.path.getmtime(file_path)
+    readable_time = datetime.datetime.fromtimestamp(last_modified_time).strftime('%Y-%m-%d %H:%M:%S')
+    print(f"The file loaded successfully, last change: {readable_time}")
 
 class LinearRegression:
     """
@@ -47,6 +55,8 @@ class LinearRegression:
 
         self.loss_history: List[float] = []
 
+        self.number_of_iterations = 0
+
     def fit(self, x: np.ndarray, y: np.ndarray) -> LinearRegression:
         """
         Обучение модели линейной регрессии, подбор весов для наборов данных x и y.
@@ -67,6 +77,7 @@ class LinearRegression:
         self.loss_history.append(self.calc_loss(x, y)) 
 
         for iteration in range(self.max_iter):
+            self.number_of_iterations += 1 
             gradient = self.descent.calc_gradient(x, y)
             weight_diff = self.descent.update_weights(gradient)
             
@@ -77,6 +88,7 @@ class LinearRegression:
             if np.any(np.isnan(self.descent.w)):
                 print("Gradient Descent produced NaN values")
                 break 
+            
 
         return self
 
@@ -113,3 +125,25 @@ class LinearRegression:
             Значение функции потерь.
         """
         return self.descent.calc_loss(x, y)
+
+    def score(self, x: np.ndarray, y: np.ndarray) -> float:
+        """
+        Вычисление коэффициента детерминации R^2.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            Массив признаков.
+        y : np.ndarray
+            Массив целевых переменных.
+
+        Returns
+        -------
+        r2 : float
+            Значение коэффициента детерминации R^2.
+        """
+        y_pred = self.predict(x)
+        ss_res = np.sum((y - y_pred) ** 2)
+        ss_tot = np.sum((y - np.mean(y)) ** 2)
+        r2 = 1 - (ss_res / ss_tot)
+        return r2
