@@ -89,7 +89,6 @@ class LinearRegression:
                 print("Gradient Descent produced NaN values")
                 break 
             
-
         return self
 
     def predict(self, x: np.ndarray) -> np.ndarray:

@@ -557,27 +557,31 @@ class BaseDescentReg(BaseDescent):
 
 
 class VanillaGradientDescentReg(BaseDescentReg, VanillaGradientDescent):
-    """
-    Класс полного градиентного спуска с регуляризацией.
-    """
+    def calc_gradient(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        gradient = super().calc_gradient(x, y)
+        l2_gradient =  self.mu * self.w
+        return gradient + l2_gradient
 
 
 class StochasticDescentReg(BaseDescentReg, StochasticDescent):
-    """
-    Класс стохастического градиентного спуска с регуляризацией.
-    """
+    def calc_gradient(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        gradient = super().calc_gradient(x, y)
+        l2_gradient =  self.mu * self.w
+        return gradient + l2_gradient
 
 
 class MomentumDescentReg(BaseDescentReg, MomentumDescent):
-    """
-    Класс градиентного спуска с моментом и регуляризацией.
-    """
+    def calc_gradient(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        gradient = super().calc_gradient(x, y)
+        l2_gradient = self.mu * self.w
+        return gradient + l2_gradient
 
 
 class AdamReg(BaseDescentReg, Adam):
-    """
-    Класс адаптивного градиентного алгоритма с регуляризацией (AdamReg).
-    """
+    def calc_gradient(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        gradient = super().calc_gradient(x, y)
+        l2_gradient = self.mu * self.w
+        return gradient + l2_gradient
 
 
 def get_descent(descent_config: dict) -> BaseDescent:
