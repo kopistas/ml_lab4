@@ -294,7 +294,12 @@ class VanillaGradientDescent(BaseDescent):
         """
         predictions = self.predict(x)
         error = predictions - y
-        gradient = 2 * x.T.dot(error) / len(y)
+        if self.loss_function == LossFunction.MSE:
+            gradient = 2 * x.T.dot(error) / len(y)
+        elif self.loss_function == LossFunction.LogCosh:
+            gradient = -x.T.dot(np.tanh(error)) / len(y)
+        else:
+            raise NotImplementedError("This loss function is not supported.")
         return gradient
 
 
@@ -343,11 +348,14 @@ class StochasticDescent(VanillaGradientDescent):
         batch_indices = np.random.randint(0, x.shape[0], size=self.batch_size)
         x_batch = x[batch_indices]
         y_batch = y.iloc[batch_indices]
-
         predictions = self.predict(x_batch)
-        errors = predictions - y_batch
-        gradient = 2 * x_batch.T.dot(errors) / self.batch_size
-
+        error = predictions - y_batch
+        if self.loss_function == LossFunction.MSE:
+            gradient = 2 * x_batch.T.dot(error) / self.batch_size
+        elif self.loss_function == LossFunction.LogCosh:
+            gradient = -x_batch.T.dot(np.tanh(error)) / self.batch_size  # Минус добавлен здесь
+        else:
+            raise NotImplementedError("This loss function is not supported.")
         return gradient
 
 
